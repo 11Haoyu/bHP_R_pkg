@@ -1,55 +1,37 @@
-# Project of BoostedHP Package   ![image](https://github.com/chenyang45/A_N/blob/master/graph/gganimation/preview.gif)
+# Boosted HP Filter
 
-packages for Peter Phillips and Zhentao Shi (2018): "Boosting the Hodrick-Prescott Filter"
+This is an R package for 
 
-# 
+Phillips, Peter CB, and Zhentao Shi: "[Boosting: Why You Can Use the HP Filter]((https://arxiv.org/abs/1905.00175).)," arXiv: 1905.00175, Cowles Foundation Discussion Paper No.2192, (2019).
 
-Version : 1.0
 
-2018-07-10 
+### Installation
 
-## Introduction
-
-This is an accompanying repository for the paper:
-
-Peter Phillips and Zhentao Shi (2018): "Boosting the Hodrick-Prescott Filter" (to provide the arxiv link)
-
-We offer Package supporting the paper.
-
-the main function is : 
-
-* `BoostedHP.R` contains the R function to implement the automated boosted HP filter.
-The inputs and outputs are detailed in the beginning of the function.
-
-We welcome comments the code at any time.
-
-#### Install
-
-A very preliminary R package can be installed by running in `R`
+R package, named `bHP`, can be installed by running in `R`
 ```
 install.packages("devtools")
-devtools::install_github("chenyang45/BoostedHP/BoostedHP")
-library("BoostedHP")
+devtools::install_github("chenyang45/BoostedHP")
+library("bHP")
 ```
-The package is in progress and far from mature.
 
-#### Example
-```
-load("Ireland_GDP.RData") # Ireland Annual GDP example in the paper
+### Status
 
-lam = 100 # tuning parameter for the annaul data
+The package is at the initial release `v1.0`. Email the authors or leave a message in `issue` if you have any questions or comments.
 
-# raw HP filter
-bx_HP = BoostedHP(IRE, lambda = lam, iter= FALSE)
+###  Usage
 
-# by BIC
-bx_BIC = BoostedHP(IRE, lambda = lam, iter= TRUE, test_type = "BIC")
+See the [vignette](https://github.com/chenyang45/BoostedHP/blob/master/vignettes/vignette.pdf) as well as the help file of `BoostedHP`.
 
-# by ADF
-bx_ADF = BoostedHP(IRE, lambda = lam, iter= TRUE, test_type = "adf", sig_p = 0.050)
 
-# summarize the outcome
-outcome = cbind(IRE, bx_HP$trend, bx_BIC$trend, bx_ADF$trend) 
-matplot(  outcome, type = "l", ylab = "", lwd = rep(2,4)  )
-```
-To be continued.
+
+
+
+![image](https://github.com/chenyang45/BoostedHP/blob/master/ADF_bHP_ani.gif)
+
+Dynamic demonstration, by Chen Yang
+
+
+
+![image](https://github.com/chenyang45/BoostedHP/blob/master/vignettes/bHP_illustration.jpg)
+
+Artist's impression, by Iris Shi
