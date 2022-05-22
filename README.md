@@ -12,7 +12,7 @@ MATLAB users please [click here](https://github.com/zhentaoshi/Boosted_HP_filter
 R package, named `bHP`, can be installed by running in `R`
 ```
 install.packages("devtools")
-devtools::install_github("chenyang45/BoostedHP")
+devtools::install_github("zhentaoshi/BoostedHP")
 library("bHP")
 ```
 
@@ -22,12 +22,12 @@ The package is at the initial release `v1.0`. Email the authors or leave a messa
 
 ###  Usage
 
-See the [vignette](https://github.com/chenyang45/BoostedHP/blob/master/vignettes/vignette.pdf) as well as the help file of `BoostedHP`.
+See the [vignette](https://github.com/zhentaoshi/BoostedHP/blob/master/vignettes/vignette.pdf) as well as the help file of `BoostedHP`.
 
 
 
 
 
-![image](https://github.com/chenyang45/BoostedHP/blob/master/ADF_bHP_ani.gif)
+![image](https://github.com/zhentaoshi/BoostedHP/blob/master/ADF_bHP_ani.gif)
 
 Dynamic demonstration, by Chen Yang
