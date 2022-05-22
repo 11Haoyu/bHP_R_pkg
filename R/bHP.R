@@ -7,9 +7,7 @@
 #'
 #' @references
 #'
-#' Phillips, Peter CB, and Zhentao Shi.
-#' "Boosting: Why you can use the hp filter."
-#' arXiv: 1905.00175, Cowles Foundation Discussion Paper No.2192, (2019).
+#' Peter Phillips and Zhentao Shi, 2021: "Boosting: Why You Can Use the HP Filter," International Economic Review, 62(2), 521-570
 #'
 #' @docType package
 #' @name bHP
@@ -29,7 +27,7 @@ NULL
 #'  \item\strong{Date Range:} {1981--2016}
 #' }
 #'
-#' @section Descripton:
+#' @section Description:
 #' This dataset is described in Section 4.1 of Philips and Shi (2019).
 #' Also See Okun, Ball, Leigh, and Loungani (2017).
 #'
@@ -38,9 +36,7 @@ NULL
 #'
 #' @references
 #'
-#' Phillips, Peter CB, and Zhentao Shi.
-#' "Boosting: Why you can use the hp filter."
-#' arXiv: 1905.00175, Cowles Foundation Discussion Paper No.2192, (2019).
+#' Peter Phillips and Zhentao Shi, 2021: "Boosting: Why You Can Use the HP Filter," International Economic Review, 62(2), 521-570
 #'
 #' Ball, Laurence, Daniel Leigh, and Prakash Loungani.
 #'   "Okun's law: Fit at 50?."

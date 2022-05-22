@@ -2,7 +2,9 @@
 
 This is an R package for 
 
-Phillips, Peter CB, and Zhentao Shi: "[Boosting: Why You Can Use the HP Filter]((https://arxiv.org/abs/1905.00175).)," arXiv: 1905.00175, Cowles Foundation Discussion Paper No.2192, (2019).
+Peter Phillips and Zhentao Shi, "[Boosting: Why You Can Use the HP Filter,](https://onlinelibrary.wiley.com/doi/10.1111/iere.12495)" *International Economic Review*, 62(2), 521-570
+
+MATLAB users please [click here](https://github.com/zhentaoshi/Boosted_HP_filter/tree/master/matlab).
 
 
 ### Installation
@@ -29,9 +31,3 @@ See the [vignette](https://github.com/chenyang45/BoostedHP/blob/master/vignettes
 ![image](https://github.com/chenyang45/BoostedHP/blob/master/ADF_bHP_ani.gif)
 
 Dynamic demonstration, by Chen Yang
-
-
-
-![image](https://github.com/chenyang45/BoostedHP/blob/master/vignettes/bHP_illustration.jpg)
-
-Artist's impression, by Iris Shi
