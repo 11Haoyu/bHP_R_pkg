@@ -1,6 +1,6 @@
 #' bHP: Package for the boosted HP filter
 #'
-#' The boosted HP filter by Phillips and Shi (2019)
+#' The boosted HP filter by Phillips and Shi (2021)
 #'
 #' \code{BoostedHP} is the main function. It generates a \code{bHP} object which can work with
 #' generic methods.
