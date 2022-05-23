@@ -5,7 +5,7 @@
 \alias{bHP}
 \title{bHP: Package for the boosted HP filter}
 \description{
-The boosted HP filter by Phillips and Shi (2019)
+The boosted HP filter by Phillips and Shi (2021)
 }
 \details{
 \code{BoostedHP} is the main function. It generates a \code{bHP} object which can work with
