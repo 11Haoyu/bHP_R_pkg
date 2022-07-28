@@ -1,0 +1,318 @@
+---
+title: "增强的HP滤波器"
+author: "陈阳、史震涛   \\ (王国英 翻译)"
+date: \today
+
+documentclass: ctexart
+output:
+  rticles::ctex:
+
+description: "nothing"
+geometry: margin=1in
+  
+
+bibliography: REFERENCES.bib
+biblio-style: apalike
+link-citations: yes
+fontsize: 12pt
+urlcolor: blue
+vignette: |
+  %\VignetteIndexEntry{my-vignette} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+header-includes:
+- \usepackage{graphics}
+- \usepackage{pgfplots}
+- \usepackage{caption}
+- \usepackage{setspace}
+- \singlespacing
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 12cm]{bHP_illustration}
+\caption*{Illustration of bHP, by Iris Shi}
+\end{figure}
+
+
+```{r setup}
+library(bHP)
+library(magrittr)
+```
+
+## 前言
+
+我们在这里扼要地介绍HP滤波器, 增强的(boosted) HP滤波器以及相应的R包`bHP`的使用。 
+Hodrick-Prescott 滤波器 (简称HP滤波器; @hodrick1997postwar) 是宏观经济数据分析中的基本统计工具之一。
+它简单易用，已被广泛用于实证宏观经济学研究。作为一种算法，它的优劣已被人们争论了几十年。近年来，由于世界宏观经济的波动，学术界开始重新关注研究其性质并对其进行扩展。
+尽管 @hamilton2017you 反对使用 HP 滤波器， @Phillips2019boosting 提出了对原始 HP 滤波器的机器学习增强(boosting)，称为增强 HP 滤波器（简称bHP），并在理论上证明其相合性。
+
+## HP 滤波器
+
+给定一个时间序列 $(x_{t})_{t=1}^n$
+HP 方法将其分解为两个相加的分量：趋势(trend)分量 $f_{t}$ 和周期(cycle)分量
+$c_{t}$。 
+趋势用一下最小化问题来估计：
+\[
+(\hat{f}_{t}^\mathrm{HP} )
+ =\arg\min_{ (f_{t} )}  \left\{ \sum_{t=1}^{n} (x_{t}-f_{t} )^{2}
+ +\lambda\sum_{t=2}^{n} (\Delta^ 2 f_{t}  )^{2} \right\},
+\]
+其中 $\Delta f_{t}=f_{t}-f_{t-1}$，
+ $\Delta^2 f_{t}= \Delta f_{t}- \Delta f_{t-1} = f_{t}- 2 f_{t-1} + f_{t-2}$，
+并且 $\lambda\geq 0$ 是一个控制惩罚水平的调谐参数。
+对应的周期是：
+\[
+(\hat{c}_{t}^\mathrm{HP} )=( x_t-\hat{f}_{t}^\mathrm{HP}). 
+\]
+
+该二次优化问题有封闭解。估计出来的趋势可以写为
+\begin{equation*}
+\widehat{f}^{\mathrm{HP}}=S x,
+\end{equation*}
+其中 $S$ 是非随机的 $n\times n$ 矩阵，而 $x=(x_1,...,x_n)'$ 是时间序列样本数据。
+估计出来的周期可以写为
+\[
+\widehat{c}^{\mathrm{HP}}=\left(I_{n}-S\right)x,
+\]
+其中 $I_{n}$ 是 $n\times n$ 单位矩阵。 $S$ 的显式形式可以在 @Phillips2019boosting 中找到。
+
+调谐参数对于 HP 滤波器的表现至关重要。
+在实践中， @hodrick1997postwar 建议对季度数据使用 $\lambda=1600$，该数字及其采样频率调整版本 [@ravn2002adjusting] 被广泛使用。 然而，最近的研究 
+[@phillips2015business, @hamilton2017you] 发现这个“黄金标准”对于宏观经济研究中经常使用的时间序列长度来说过于僵化。
+
+
+## 增强的 HP 滤波器
+
+如果周期性分量 $\widehat{c}_{t}^{\mathrm{HP}}$ 在经过 HP 过滤后仍表现出趋势行为，我们可以继续将 HP 滤波器应用于
+$\widehat{c}^{\mathrm{HP}}$ 以去除剩余的趋势。在第二次拟合后，周期分量可以被写为：
+\[
+\widehat{c}^{\left(2\right)}=\left(I_{n}-S\right)\widehat{c}^{\mathrm{HP}}=\left(I_{n}-S\right)^{2}x,
+\]
+其中上标 ``$\left(2\right)$'' 表示 HP 滤波器被使用了两次。对应的趋势分量变为：
+\[
+\widehat{f}^{\left(2\right)}=x-\widehat{c}^{\left(2\right)}=\left(I_{n}-\left(I_{n}-S\right)^{2}\right)x.
+\]
+如果 $\widehat{c}^{\left(2\right)}$ 再次表现出趋势行为，滤波过程可以进行第三次或更多次数。
+在重复使用滤波器 $m$ 次以后，周期分量和趋势分量分别为：
+\begin{eqnarray*}
+	\widehat{c}^{\left(m\right)} & = &  \left(I_{n}-S\right)\widehat{c}^{\left(m-1\right)}=\left(I_{n}-S\right)^{m}x \\
+	\widehat{f}^{\left(m\right)} & = & x-\widehat{c}^{\left(m\right)}.
+\end{eqnarray*}
+
+迭代次数 $m$ 是 bHP 中的一个附加调谐参数。在实践中，我们建议根据惯例来选择 $\lambda$， 
+例如，处理季度数据是我们设定 $\lambda = 1600$，然后随着迭代的进行来选择一个停止标准(stopping criterion)。
+@Phillips2019boosting 建议使用 ADF 测试或者贝叶斯信息准则 (BIC) 来中止迭代。
+
+## 用法
+
+软件包 `bHP` 将使用 bHP 的过程自动化。 主函数为 `BoostedHP`。
+用户自选两个函数的变量，`lambda` 为 $\lambda$，`stopping` 为停止标准。 `stopping` 有三个选项可用：
+
+* `"BIC"` 为 BIC 停止标准
+* `"adf"` 为 ADF 停止标准 (默认 $p$-value 5\%)
+* `"nonstop"` 保持迭代直到达到 `Max_iter` （默认为 100 次迭代）。
+
+
+默认选项的基本用法如下：
+```{r, eval=FALSE}
+BoostedHP(x, lambda = 1600, iter= TRUE, stopping = "BIC", Max_Iter = 100)
+```
+上面一行产生了一个 `bHP` 类(class)的结果。我们可以通过 `$trend` 提取趋势，通过 `$cycle` 提取周期。每次迭代的趋势序列
+储存在 `$trend_hist`中， 而 `$iter_num` 记录迭代次数。
+原始的 HP 滤波器也可以通过设置 `iter = FALSE` 和 `lambda`来实现。
+
+
+## 例子
+
+@Phillips2019boosting 中的一个应用是关于奥肯定律(Okun's law)的国际比较。
+我们在这里使用爱尔兰的年度 GDP 进行演示。
+
+```{r, message=FALSE}
+lam <- 100 # tuning parameter for the annual data
+data(IRE) # load the data 'IRE'
+
+bx_HP <- BoostedHP(IRE, lambda = lam, iter= FALSE)$trend
+bx_BIC <- BoostedHP(IRE, lambda = lam, stopping = "BIC")$trend
+bx_ADF <- BoostedHP(IRE, lambda = lam, stopping = "adf")$trend
+bx_nonstop <- BoostedHP(IRE, lambda = lam, iter= TRUE, 
+                        stopping = "nonstop") %>% predict( )
+# use the generic method `predict` is an alternative way to get the trend
+
+matplot( y = cbind(IRE, bx_HP, bx_BIC, bx_ADF, bx_nonstop), 
+         type = "l", x = 1981:2016, ylab = "data and trends", 
+         xlab = "year", main = "Ireland Annual GDP")
+legend("bottomright", legend = c("data","HP", "BIC", "ADF", "nonstop"), 
+       col = 1:5, lty = 1:5)
+```
+
+趋势和周期也可以分别通过通用方法 `predict` 和 `residuals`提取。
+
+
+```{r}
+bx <- BoostedHP(IRE, lambda = lam, stopping = "BIC")
+IRE_cycle <- residuals(bx)
+```
+
+## 版本
+
+目前我们在 `github`上发布的的第一个R包，标为1.0版本。
+主函数 `BoostedHP` 和相关方法 `predict`、`residuals`和`BIC`相对完整，且有文档可供查阅。
+此软件包还发布了针对`bHP` 类的通用方法 `print`、`plot`和`summary`；这些方法还在实验阶段，可用但仍比较初步。
+
+
+```{r, eval=FALSE, echo=FALSE}
+#-------- plot -----------
+
+?plot.bHP
+
+#--------- start to plot the content of bHP -----------------
+
+#--------- for dynamic style (default)--------
+plot(bx_ADF)
+
+plot(bx_ADF, iteration_location = "upright") # change the location of text
+
+plot(bx_ADF, iteration_location = c(30,12)) # assign the location of text by x-y co-ordinates
+
+plot(bx_BIC, interval_t = 0.8 ) # change the time interval of animation
+
+plot(bx_nonstop, cex_legend = 2, cex_text = 3) # change the magnification of legend and text
+
+# change the color
+plot(bx_ADF,main = "dynamic graph with new color",col_raw = "#685F74", col_trend_h = "#39A1A8", col_trend_f = "#DD4B4F", col_pvalue_BIC = "#E96145")
+
+plot(bx_ADF,main = "dynamic graph with new trancparency setting",raw_alpha = 200, trend_h_alpha = 55, trend_f_alpha = 250, pvalue_BIC_alpha = 250)
+
+plot(bx_HP)
+# nonstop-iter' bHP doesn't have dynamic picture: returning NA
+
+#--------- for JS style ----------
+
+plot(bx_ADF,plot_type = "JS")
+
+# change the color
+plot(bx_ADF,plot_type = "JS",main = "Js graph with new color", col_raw = "#685F74", col_trend_f = "#DD4B4F", col_pvalue_BIC = "#39A1A8")
+
+plot(bx_BIC,plot_type = "JS")
+
+plot(bx_nonstop,plot_type = "JS")
+
+plot(bx_HP,plot_type = "JS")
+
+#--------- for static style ----------
+
+plot(bx_ADF,plot_type = "static",cex_legend = 0.7, cex_text = 0.8 )
+
+plot(bx_HP,plot_type = "static")
+
+plot(bx_BIC,plot_type = "static",cex_legend = 0.7, cex_text = 0.8 )
+
+plot(bx_nonstop,plot_type = "static",cex_legend = 0.8, cex_text = 0.8 )
+
+#----------- print -------------------------------
+
+?print.bHP
+
+#--------- start to print the content of bHP -----------------
+print(bx_ADF)
+
+print(bx_ADF, Head = F, Tail = T, trend_hist = F)
+
+print(bx_ADF, Head = T, Tail = T, trend_hist = F)
+
+print(bx_ADF, Head = F, Tail = F, trend_hist = F)
+
+print(bx_BIC, Head = F, Tail = F, trend_hist = T, select_trend_hist = 1:bx_BIC$iter_num)
+
+print(bx_BIC, Head = F, Tail = F, trend_hist = T,  select_trend_hist = c(1,3,5))
+
+# when the trend_hist is FALSE, select_trend_hist is invalid
+print(bx_BIC, Head = F, Tail = F, trend_hist = F, select_trend_hist = c(1,3,5))
+
+print(bx_BIC, Head = F, Tail = T, trend_hist = F, print_type = "latex")
+
+print(bx_BIC, Head = F, Tail = T, trend_hist = F, print_type = "html")
+
+# show the generic print function output
+print(bx_ADF, type = "generic default")
+
+
+
+#------------------ summary -----------------
+
+?summary.bHP
+
+summary(bx_ADF)
+summary(bx_BIC)
+summary(bx_nonstop)
+summary(bx_HP)
+
+#------------------ predict -----------------
+
+?predict.bHP
+
+predict(bx_HP) #Iterated number of HP filter: 1
+
+predict(bx_ADF) #Iterated number of HP filter: 19
+
+predict(bx_BIC) #Iterated number of HP filter: 5
+
+predict(bx_nonstop) #Iterated number of HP filter: 99
+
+
+#------------------ residuals -----------------
+
+?residuals.bHP
+
+residuals(bx_HP) #Iterated number of HP filter: 1
+
+residuals(bx_ADF) #Iterated number of HP filter: 19
+
+#------------------ BIC -------------------------
+
+?BIC.bHP
+
+BIC(bx_BIC)
+
+#Retrun the value path of BIC.
+#Iterated number of HP filter: 5
+#Keep the path of BIC till iterated 6 times to show the tuning point.
+#[1] 1.586255 1.366335 1.293931 1.264323 1.254397 1.254620
+
+BIC(bx_nonstop)
+
+#Retrun the BIC path of nonstop.
+#Iterated number of HP filter: 99
+#Keep the path of BIC till iterated 100 times to show the tuning point.
+#[1] 1.586255 1.366335 1.293931 1.264323 1.254397 1.254620 1.260345 1.269139 1.279670 1.291179
+#[11] 1.303223 ...
+
+
+### If the test type is not "adf", Pvalue.bHP will return error
+
+# raw HP filter
+BIC(bx_HP)
+
+# Error in BIC.bHP(bx_HP) :
+# The stationary test type is nonstop-iter, not BIC or nonstop.
+
+
+# by ADF
+BIC(bx_ADF)
+
+#Error in BIC.bHP(bx_ADF) :
+#The stationary test type is adf, not BIC or nonstop.
+
+```
+
+## References
+
+
+
