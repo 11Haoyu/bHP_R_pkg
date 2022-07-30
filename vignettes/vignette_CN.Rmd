@@ -1,6 +1,6 @@
 ---
 title: "增强的HP滤波器"
-author: "陈阳、史震涛   \\ (王国英 翻译)"
+author: "陈阳、史震涛   \\ (王珏瑛 翻译)"
 date: \today
 
 documentclass: ctexart
@@ -48,23 +48,23 @@ library(magrittr)
 
 ## 前言
 
-我们在这里扼要地介绍HP滤波器, 增强的(boosted) HP滤波器以及相应的R包`bHP`的使用。 
+我们在这里扼要地介绍HP滤波器, 增强的(boosted) HP滤波器以及相应的R包`bHP`的使用方法。 
 Hodrick-Prescott 滤波器 (简称HP滤波器; @hodrick1997postwar) 是宏观经济数据分析中的基本统计工具之一。
 它简单易用，已被广泛用于实证宏观经济学研究。作为一种算法，它的优劣已被人们争论了几十年。近年来，由于世界宏观经济的波动，学术界开始重新关注研究其性质并对其进行扩展。
-尽管 @hamilton2017you 反对使用 HP 滤波器， @Phillips2019boosting 提出了对原始 HP 滤波器的机器学习增强(boosting)，称为增强 HP 滤波器（简称bHP），并在理论上证明其相合性。
+尽管 @hamilton2017you 反对使用 HP 滤波器， @Phillips2019boosting 提出了对原始 HP 滤波器的增强(boosting)，称为增强 HP 滤波器（简称bHP），并在理论上证明了其在一定条件下的相合性。
 
 ## HP 滤波器
 
-给定一个时间序列 $(x_{t})_{t=1}^n$
-HP 方法将其分解为两个相加的分量：趋势(trend)分量 $f_{t}$ 和周期(cycle)分量
+给定一个时间序列 $(x_{t})_{t=1}^n$，
+HP 方法将其分解为两个相加的分量：趋势(trend)分量 $f_{t}$， 和周期(cycle)分量
 $c_{t}$。 
-趋势用一下最小化问题来估计：
+趋势用最小化问题来估计：
 \[
 (\hat{f}_{t}^\mathrm{HP} )
  =\arg\min_{ (f_{t} )}  \left\{ \sum_{t=1}^{n} (x_{t}-f_{t} )^{2}
  +\lambda\sum_{t=2}^{n} (\Delta^ 2 f_{t}  )^{2} \right\},
 \]
-其中 $\Delta f_{t}=f_{t}-f_{t-1}$，
+其中二阶差分
  $\Delta^2 f_{t}= \Delta f_{t}- \Delta f_{t-1} = f_{t}- 2 f_{t-1} + f_{t-2}$，
 并且 $\lambda\geq 0$ 是一个控制惩罚水平的调谐参数。
 对应的周期是：
@@ -76,7 +76,7 @@ $c_{t}$。
 \begin{equation*}
 \widehat{f}^{\mathrm{HP}}=S x,
 \end{equation*}
-其中 $S$ 是非随机的 $n\times n$ 矩阵，而 $x=(x_1,...,x_n)'$ 是时间序列样本数据。
+其中 $S$ 是非随机的 $n\times n$ 矩阵，而 $x=(x_1,...,x_n)'$ 表示时间序列样本数据。
 估计出来的周期可以写为
 \[
 \widehat{c}^{\mathrm{HP}}=\left(I_{n}-S\right)x,
@@ -84,8 +84,9 @@ $c_{t}$。
 其中 $I_{n}$ 是 $n\times n$ 单位矩阵。 $S$ 的显式形式可以在 @Phillips2019boosting 中找到。
 
 调谐参数对于 HP 滤波器的表现至关重要。
-在实践中， @hodrick1997postwar 建议对季度数据使用 $\lambda=1600$，该数字及其采样频率调整版本 [@ravn2002adjusting] 被广泛使用。 然而，最近的研究 
-[@phillips2015business, @hamilton2017you] 发现这个“黄金标准”对于宏观经济研究中经常使用的时间序列长度来说过于僵化。
+在实践中， @hodrick1997postwar 建议对季度数据使用 $\lambda=1600$，该数字及其采样频率调整版本 [@ravn2002adjusting] 被广泛使用。 然而，最年的研究 
+[@phillips2015business]
+[@hamilton2017you] 发现这个“黄金标准”对于宏观经济研究中经常使用的时间序列长度来说过于僵化。
 
 
 ## 增强的 HP 滤波器
@@ -108,30 +109,30 @@ $\widehat{c}^{\mathrm{HP}}$ 以去除剩余的趋势。在第二次拟合后，�
 
 迭代次数 $m$ 是 bHP 中的一个附加调谐参数。在实践中，我们建议根据惯例来选择 $\lambda$， 
 例如，处理季度数据是我们设定 $\lambda = 1600$，然后随着迭代的进行来选择一个停止标准(stopping criterion)。
-@Phillips2019boosting 建议使用 ADF 测试或者贝叶斯信息准则 (BIC) 来中止迭代。
+@Phillips2019boosting 建议使用 ADF 检验或者贝叶斯信息准则 (BIC) 来停止迭代。
 
 ## 用法
 
-软件包 `bHP` 将使用 bHP 的过程自动化。 主函数为 `BoostedHP`。
-用户自选两个函数的变量，`lambda` 为 $\lambda$，`stopping` 为停止标准。 `stopping` 有三个选项可用：
+为了将使用 bHP 方法的过程自动化，我们在R当中开发了 `bHP` 软件包。 该软件包的主函数为 `BoostedHP`，
+其中用户需要自选两个函数变量，`lambda` 为 $\lambda$ (默认值为`lambda=1600`)，`stopping` 为停止标准。 `stopping` 有三个选项可用：
 
 * `"BIC"` 为 BIC 停止标准
 * `"adf"` 为 ADF 停止标准 (默认 $p$-value 5\%)
-* `"nonstop"` 保持迭代直到达到 `Max_iter` （默认为 100 次迭代）。
+* `"nonstop"` 保持迭代直到达到 `Max_iter` (默认值为 100 次迭代)。
 
 
 默认选项的基本用法如下：
 ```{r, eval=FALSE}
 BoostedHP(x, lambda = 1600, iter= TRUE, stopping = "BIC", Max_Iter = 100)
 ```
-上面一行产生了一个 `bHP` 类(class)的结果。我们可以通过 `$trend` 提取趋势，通过 `$cycle` 提取周期。每次迭代的趋势序列
+运行上面这一行代码，将会产生了一个名叫 `bHP` 的类(class)。我们可以通过 `$trend` 提取趋势，通过 `$cycle` 提取周期。每次迭代的趋势序列
 储存在 `$trend_hist`中， 而 `$iter_num` 记录迭代次数。
 原始的 HP 滤波器也可以通过设置 `iter = FALSE` 和 `lambda`来实现。
 
 
 ## 例子
 
-@Phillips2019boosting 中的一个应用是关于奥肯定律(Okun's law)的国际比较。
+@Phillips2019boosting 中的一个实际数据应用是关于奥肯定律(Okun's law)的国际比较。
 我们在这里使用爱尔兰的年度 GDP 进行演示。
 
 ```{r, message=FALSE}
@@ -157,7 +158,10 @@ legend("bottomright", legend = c("data","HP", "BIC", "ADF", "nonstop"),
 
 ```{r}
 bx <- BoostedHP(IRE, lambda = lam, stopping = "BIC")
+IRE_trend <- predict(bx)
 IRE_cycle <- residuals(bx)
+
+print(cbind(IRE, IRE_trend, IRE_cycle))
 ```
 
 ## 版本
@@ -165,7 +169,6 @@ IRE_cycle <- residuals(bx)
 目前我们在 `github`上发布的的第一个R包，标为1.0版本。
 主函数 `BoostedHP` 和相关方法 `predict`、`residuals`和`BIC`相对完整，且有文档可供查阅。
 此软件包还发布了针对`bHP` 类的通用方法 `print`、`plot`和`summary`；这些方法还在实验阶段，可用但仍比较初步。
-
 
 ```{r, eval=FALSE, echo=FALSE}
 #-------- plot -----------
