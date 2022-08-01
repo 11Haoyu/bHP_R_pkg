@@ -170,6 +170,11 @@ print(cbind(IRE, IRE_trend, IRE_cycle))
 主函数 `BoostedHP` 和相关方法 `predict`、`residuals`和`BIC`相对完整，且有文档可供查阅。
 此软件包还发布了针对`bHP` 类的通用方法 `print`、`plot`和`summary`；这些方法还在实验阶段，可用但仍比较初步。
 
+## 相关链接
+
+* 论文: [https://onlinelibrary.wiley.com/doi/10.1111/iere.12495](https://onlinelibrary.wiley.com/doi/10.1111/iere.12495)
+* 代码仓库: [https://github.com/zhentaoshi/bHP_R_pkg/](https://github.com/zhentaoshi/bHP_R_pkg/)
+
 ```{r, eval=FALSE, echo=FALSE}
 #-------- plot -----------
 
