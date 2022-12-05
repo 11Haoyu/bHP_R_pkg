@@ -22,4 +22,14 @@ bx_nonstop <- BoostedHP(IRE, lambda = lam, iter= TRUE, stopping = "nonstop")
 # plot(bx_ADF$cycle)
 # plot(bx_HP$cycle)
 # plot(bx_nonstop$cycle)
-plot(bx_BIC$cycle)
+# plot(bx_BIC$cycle)
+
+#Dynamic Demonstration
+
+plot(bx_ADF, iteration_location = "upright",interval_t = 0.8) 
+
+# plot(bx_ADF, iteration_location = c(30,12)) 
+
+# plot(bx_BIC, interval_t = 0.8 ) 
+
+# plot(bx_nonstop, cex_legend = 2, cex_text = 3,interval_t =0.8) 
